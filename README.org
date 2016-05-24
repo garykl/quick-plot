@@ -1,0 +1,71 @@
+* quick plot
+
+The scripting interface of matplotlib is stateful, therefore
+dangerous. The object oriented interface to the plotting library is
+polluted. This tiny library combines the two interfaces into one
+context manager.
+
+** fundament
+
+If this file is somewhere in your =$PYTHONPATH=, the following code
+should produce a plot.
+
+#+BEGIN_SRC python :results none
+import numpy as np
+import quick
+
+with quick.Plot() as qp:
+    qp.plot(np.sin(np.linspace(0, 2 * np.pi)))
+#+END_SRC
+
+The =Plot= class is the only available class in the =quick= module. It
+should be instantiated exactly once. Its instance can do everything
+the matplotlib axis object can do. For some methods, a default
+configuration is supplied. There are some methods, that are not
+contained in the axis object, for example =trajectory=, =field=, =points=,
+=remove_border=, =remove_xticks=. When a method is called, that is neither
+a method of the =axis= object, nor one of the additional methods of this
+module, then the module =matplotlib.pyplot= is searched for a function
+with that name, and, if it exists, it is called. When the context
+manager is left, the plot shows up.
+
+*** arguments
+
+=Plot= takes optional arguments.
+| =filename= | given that, the plot is not shown interactively, but saved as a file, default =None= |
+| =figsize=  | a tuple, representing (width, height), default =(3, 3)=                              |
+| =grid=     | if =True= shows a grid, default =False                                               |
+all other optional arguments are directly passed to =matplotlib.pyplot.subplot=.
+
+** short form
+
+If you just want to quickly see some of your data, and you do not want
+to do any customization of the plotting result, the context manager is
+a bit of a boilerplate. So there is the following shorthand for the
+previous script.
+#+BEGIN_SRC python :results none
+import numpy as np
+import quick
+
+quick.plot(np.sin(np.linspace(0, 2 * np.pi)))
+#+END_SRC
+
+The context manager is called implicitly.
+
+** more convenience
+
+The quick module additionally provides a few methods that are not
+directly related to the =matplotlib= plotting facility, e.g.  
+- =colored=: takes a list of array and return an iterator with tuple,
+  with the data and a color, that can be past to the color argument of
+  plotting methods. Optional argument is the name of a colormap
+- =landscape=, =portrait=: they return tuples that can be past to the
+  =figsize= argument of =Plot=, internally using the golden ratio.
+- =tex=: surround a string by dollar signs.
+
+** drawback
+
+There is no interactive workflow anymore with this approach. I like
+that way of working, because due to script restarts you eliminate all
+errors in your script, that may occur from state changes from the
+past, that confuses the (fragile) python module system.
